@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfoBud</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 400px;
+            height: 600px;
+            background-color: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background-color: #007BFF;
+            color: white;
+            padding: 16px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 10px;
+            border-radius: 15px;
+            line-height: 1.5;
+        }
+
+        .user-message {
+            background-color: #007BFF;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .bot-message {
+            background-color: #f1f1f1;
+            align-self: flex-start;
+        }
+
+        .input-box {
+            padding: 16px;
+            display: flex;
+            border-top: 1px solid #ddd;
+            background-color: #fafafa;
+        }
+
+        .input-box input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .input-box button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-left: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .input-box button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Scrollbar Styling */
+        .chat-box::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .chat-box::-webkit-scrollbar-thumb {
+            background-color: #007BFF;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        AI Chatbot
+    </div>
+
+    <div class="chat-box" id="chat-box">
+        <!-- Chat messages will appear here -->
+    </div>
+
+    <div class="input-box">
+        <input type="text" id="user-input" placeholder="Type a message...">
+        <button id="send-btn">Send</button>
+    </div>
+</div>
+
+<script>
+    const chatBox = document.getElementById('chat-box');
+    const userInput = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-btn');
+
+    function appendMessage(content, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', type);
+        messageDiv.textContent = content;
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+    }
+
+    sendButton.addEventListener('click', () => {
+        const message = userInput.value.trim();
+        if (message !== '') {
+            appendMessage(message, 'user-message'); // Display user message
+            userInput.value = ''; // Clear input field
+
+            // Send message to backend for bot response
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                appendMessage(data.response, 'bot-message'); // Display bot response
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    });
+
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendButton.click(); // Trigger send on "Enter" key
+        }
+    });
+</script>
+
+</body>
+</html>
